@@ -67,12 +67,10 @@ module Katip.Scribes.ElasticSearch
     , essIndexSettings
     , essIndexSharding
     , defaultEsScribeCfg
-    , defaultEsScribeCfgV1
     , defaultEsScribeCfgV5
     -- ** Version-Proxied APIS
     -- $versionproxies
     , defaultEsScribeCfg'
-    , ESV1
     , ESV5
     -- * Utilities
     , mkDocId

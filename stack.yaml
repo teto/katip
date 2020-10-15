@@ -1,11 +1,11 @@
-resolver: lts-12.26
+resolver: lts-16.18
 packages:
   - katip
   - katip-elasticsearch
   - katip-datadog
   - katip-logzio
 extra-deps:
-  - bloodhound-0.16.0.0
+  - ../bloodhound
   - unliftio-core-0.2.0.1
   - resourcet-1.2.3
 flags:

@@ -34,8 +34,7 @@ import           Data.Time
 import           Data.Time.Calendar.WeekDate
 import           Data.Typeable                           as Typeable
 import qualified Data.Vector                             as V
-import qualified Database.V1.Bloodhound                  as V1
-import qualified Database.V5.Bloodhound                  as V5
+import qualified Database.Bloodhound                  as V5
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status
 import           Test.QuickCheck.Instances               ()
@@ -54,7 +53,6 @@ main :: IO ()
 main = defaultMainWithIngredients ings $ askOption $ \vers -> testGroup "katip-elasticsearch"
   [
     case vers of
-      TestV1 -> esTests (Typeable.Proxy :: Typeable.Proxy ESV1)
       TestV5 -> esTests (Typeable.Proxy :: Typeable.Proxy ESV5)
   , typeAnnotatedTests
   , roundToSundayTests
@@ -64,14 +62,12 @@ main = defaultMainWithIngredients ings $ askOption $ \vers -> testGroup "katip-e
 
 
 -------------------------------------------------------------------------------
-data TestWithESVersion = TestV1
-                       | TestV5
+data TestWithESVersion = TestV5
                        deriving (Typeable)
 
 
 instance IsOption TestWithESVersion where
-  defaultValue = TestV1
-  parseValue "1" = Just TestV1
+  defaultValue = TestV5
   parseValue "5" = Just TestV5
   parseValue _   = Nothing
   optionName = Tagged "es-version"
@@ -99,29 +95,6 @@ class ESVersion v => TestESVersion v where
   refreshIndex :: proxy v -> IndexName v -> BH v IO (Response ByteString)
   withBH :: proxy v -> ManagerSettings -> Server v -> BH v IO a -> IO a
   searchByIndex :: proxy v -> IndexName v -> Search v -> BH v IO (Response ByteString)
-
-
-instance TestESVersion ESV1 where
-  type Server ESV1 = V1.Server
-  toServer _ = V1.Server
-  toMappingName _ = V1.MappingName
-  type Search ESV1 = V1.Search
-  type Query ESV1 = V1.Query
-  type Filter ESV1 = V1.Filter
-  type ShardCount ESV1 = V1.ShardCount
-  toShardCount _ = V1.ShardCount
-  type ReplicaCount ESV1 = V1.ReplicaCount
-  toReplicaCount _ = V1.ReplicaCount
-  mkSearch _ = V1.mkSearch
-  mkBHEnv _ = V1.mkBHEnv
-  indexShards _ = lens V1.indexShards (\s v -> s { V1.indexShards = v})
-  indexReplicas _ = lens V1.indexReplicas (\r v -> r { V1.indexReplicas = v})
-
-  deleteIndex _ = V1.deleteIndex
-  deleteTemplate _ = V1.deleteTemplate
-  refreshIndex _ = V1.refreshIndex
-  withBH _ = V1.withBH
-  searchByIndex _ = V1.searchByIndex
 
 
 instance TestESVersion ESV5 where

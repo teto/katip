@@ -28,7 +28,7 @@ import           Control.Retry                           (RetryPolicy,
 import           Data.Aeson
 import           Data.ByteString.Lazy                    (ByteString)
 import           Data.List.NonEmpty                      (NonEmpty (..))
-import           Data.Monoid                             ((<>))
+import           Data.Monoid                             ()
 import           Data.Text                               (Text)
 import qualified Data.Text                               as T
 import qualified Data.Text.Encoding                      as T
@@ -37,8 +37,7 @@ import           Data.Time.Calendar.WeekDate
 import           Data.Typeable                           as Typeable
 import           Data.UUID
 import qualified Data.UUID.V4                            as UUID4
-import qualified Database.V1.Bloodhound                  as V1
-import qualified Database.V5.Bloodhound                  as V5
+import qualified Database.Bloodhound                  as V5
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status
 import           Text.Printf                             (printf)
@@ -108,14 +107,8 @@ defaultEsScribeCfg' prx = EsScribeCfg {
 -- | Alias of 'defaultEsScribeCfgV1' to minimize API
 -- breakage. Previous versions of katip-elasticsearch only supported
 -- ES version 1.
-defaultEsScribeCfg :: EsScribeCfg ESV1
-defaultEsScribeCfg = defaultEsScribeCfgV1
-
-
--------------------------------------------------------------------------------
--- | EsScribeCfg that will use ElasticSearch V1
-defaultEsScribeCfgV1 :: EsScribeCfg ESV1
-defaultEsScribeCfgV1 = defaultEsScribeCfg' (Typeable.Proxy :: Typeable.Proxy ESV1)
+defaultEsScribeCfg :: EsScribeCfg ESV5
+defaultEsScribeCfg = defaultEsScribeCfgV5
 
 
 -------------------------------------------------------------------------------
@@ -482,48 +475,6 @@ class ESVersion v where
   unanalyzedStringSpec :: proxy v -> Value
   analyzedStringSpec :: proxy v -> Value
 
-
-
-data ESV1 = ESV1
-
-instance ESVersion ESV1 where
-  type BHEnv ESV1 = V1.BHEnv
-  type IndexSettings ESV1 = V1.IndexSettings
-  defaultIndexSettings _ = V1.defaultIndexSettings
-  type IndexName ESV1 = V1.IndexName
-  type UpdatableIndexSetting ESV1 = V1.UpdatableIndexSetting
-  toIndexName _ = V1.IndexName
-  fromIndexName _ (V1.IndexName x) = x
-  type MappingName ESV1 = V1.MappingName
-  fromMappingName _ (V1.MappingName x) = x
-  type DocId ESV1 = V1.DocId
-  toDocId _ = V1.DocId
-  type BH ESV1 = V1.BH
-  runBH _ = V1.runBH
-  type TemplateName ESV1 = V1.TemplateName
-  toTemplateName _ = V1.TemplateName
-  type TemplatePattern ESV1 = V1.TemplatePattern
-  toTemplatePattern _ = V1.TemplatePattern
-  type IndexTemplate ESV1 = V1.IndexTemplate
-  toIndexTemplate _ = V1.IndexTemplate
-  type IndexDocumentSettings ESV1 = V1.IndexDocumentSettings
-  toUpdatabaleIndexSettings _ s =
-    (V1.NumberOfReplicas (V1.indexReplicas s)) :| []
-  defaultIndexDocumentSettings _ = V1.defaultIndexDocumentSettings
-  indexExists _ = V1.indexExists
-  indexDocument _ = V1.indexDocument
-  createIndex _ = V1.createIndex
-  updateIndexSettings _ = V1.updateIndexSettings
-  putTemplate _ = V1.putTemplate
-  putMapping _ = V1.putMapping
-  unanalyzedStringSpec _ = object
-    [ "type" .= String  "string"
-    , "index" .= String "not_analyzed"
-    ]
-  analyzedStringSpec _ = object
-    [ "type" .= String  "string"
-    , "index" .= String "analyzed"
-    ]
 
 
 data ESV5 = ESV5
